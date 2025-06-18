@@ -22,8 +22,14 @@ func main() {
 
 	db.Connect()
 
+	// Uncomment this line to drop all tables
+	db.DropAll()
+
 	// Uncomment this line to run migrations
-	// db.Migrate()
+	db.Migrate()
+
+	// Uncomment this line to Seed the Database with Dummy Data
+	db.Seed()
 
 	gormDB := db.GetDB()
 
@@ -48,6 +54,10 @@ func main() {
 	hubController := controllers.NewHubController(hubRepo)
 	IMS := server.Engine.Group("/api/v1")
 	routes.RegisterHubRoutes(IMS, hubController)
+
+	skuRepo := repository.NewSkuRepository(gormDB, client)
+	skuController := controllers.NewSkuController(skuRepo)
+	routes.RegisterSkuRoutes(IMS, skuController)
 
 	if err := server.StartServer("IMS"); err != nil {
 		log.Fatal("Could Not start Server: ", err)
