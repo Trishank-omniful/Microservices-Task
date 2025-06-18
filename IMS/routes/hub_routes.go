@@ -6,7 +6,7 @@ import (
 )
 
 func RegisterHubRoutes(router *gin.RouterGroup, controller *controllers.HubController) {
-	hubGroup := router.Group("/hubs")
+	hubGroup := router.Group("/hub")
 	{
 		hubGroup.GET("", controller.GetAllHubs)
 		hubGroup.GET("/:id", controller.GetHubById)
