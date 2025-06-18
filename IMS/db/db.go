@@ -44,6 +44,7 @@ func Connect() {
 
 	if err != nil {
 		log.Print("Cannot Connect to DB: ", err)
+		return
 	}
 
 	db = connect

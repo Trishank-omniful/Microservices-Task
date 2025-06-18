@@ -20,7 +20,7 @@ func main() {
 	db.Connect()
 
 	// Uncomment this line to run migrations
-	db.Migrate()
+	// db.Migrate()
 
 	log.Print("Starting IMS at PORT:8000")
 
