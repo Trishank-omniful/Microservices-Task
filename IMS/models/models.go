@@ -32,8 +32,8 @@ type SKU struct {
 type Inventory struct {
 	gorm.Model
 	HubID    uint `gorm:"not null;uniqueIndex:idx_sku_hub" json:"hub_id"`
-	Hub      Hub  `gorm:"foreignKey:HubID" json:"hub"`
-	SKUID    uint `gorm:"not null;uniqueIndex:idx_sku_hub" json:"sku_id"`
-	SKU      SKU  `gorm:"foreignKey:SKUID" json:"sku"`
+	Hub      Hub  `gorm:"foreignKey:HubID;constraint:OnDelete:CASCADE" json:"hub"`
+	SKUID    uint `gorm:"column:sku_id;not null;uniqueIndex:idx_sku_hub" json:"sku_id"`
+	SKU      SKU  `gorm:"foreignKey:SKUID;constraint:OnDelete:CASCADE" json:"sku"`
 	Quantity int  `gorm:"not null;default:0" json:"quantity"`
 }

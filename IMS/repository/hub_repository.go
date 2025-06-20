@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/Trishank-Omniful/Onboarding-Task/constants"
 	"github.com/Trishank-Omniful/Onboarding-Task/models"
 	"github.com/omniful/go_commons/redis"
 	"gorm.io/gorm"
@@ -23,7 +24,7 @@ func NewHubRepository(db *gorm.DB, redis *redis.Client) *HubRepository {
 }
 
 func getHubCacheKey(id uint) string {
-	return fmt.Sprintf("hub:%d", id)
+	return fmt.Sprintf("%s%d", constants.CacheKeyHubID, id)
 }
 
 func (r *HubRepository) GetAllHubs() ([]models.Hub, error) {
@@ -56,7 +57,7 @@ func (r *HubRepository) GetHubById(id uint) (*models.Hub, error) {
 	if jsonErr != nil {
 		log.Println("Failed to marshal HUB for Redis", jsonErr)
 	} else {
-		if success, err := r.Redis.Set(ctx, cacheKey, string(HubJSON), 5*time.Minute); err != nil {
+		if success, err := r.Redis.Set(ctx, cacheKey, string(HubJSON), time.Duration(constants.CacheTTLHubs)*time.Minute); err != nil {
 			log.Print("Failed to Set HUB in Redis", err)
 		} else if success {
 			log.Print("HUB set in Redis Cache: ", cacheKey)
@@ -74,7 +75,7 @@ func (r *HubRepository) UpdateHub(hub *models.Hub) error {
 	result := r.DB.Model(hub).Updates(hub)
 	if result.Error == nil {
 		r.Redis.Del(context.Background(), getHubCacheKey(hub.ID))
-		log.Print("SKU Cache Invalidated after Update")
+		log.Print("Hub Cache Invalidated after Update")
 	}
 	return result.Error
 }
@@ -84,7 +85,7 @@ func (r *HubRepository) DeleteHub(id uint) error {
 	result := r.DB.Delete(&hub, id)
 	if result.Error == nil {
 		r.Redis.Del(context.Background(), getHubCacheKey(id))
-		log.Print("SKU Cache Invalidated after Update")
+		log.Print("Hub Cache Invalidated after Delete")
 	}
 	return result.Error
 }
@@ -96,4 +97,18 @@ func (r *HubRepository) GetHubByName(name string) (*models.Hub, error) {
 		return nil, errors.New("hub not found by name")
 	}
 	return &hub, result.Error
+}
+
+func (r *HubRepository) CreateHubsBatch(hubs []models.Hub) error {
+	if len(hubs) == 0 {
+		return nil
+	}
+	result := r.DB.CreateInBatches(hubs, 100)
+	return result.Error
+}
+
+func (r *HubRepository) GetHubsByIDs(ids []uint) ([]models.Hub, error) {
+	var hubs []models.Hub
+	result := r.DB.Where("id IN (?)", ids).Find(&hubs)
+	return hubs, result.Error
 }
