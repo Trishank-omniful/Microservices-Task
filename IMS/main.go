@@ -4,8 +4,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/Trishank-Omniful/Onboarding-Task/constants"
 	"github.com/Trishank-Omniful/Onboarding-Task/controllers"
 	"github.com/Trishank-Omniful/Onboarding-Task/db"
+	"github.com/Trishank-Omniful/Onboarding-Task/middleware"
 	"github.com/Trishank-Omniful/Onboarding-Task/repository"
 	"github.com/Trishank-Omniful/Onboarding-Task/routes"
 	"github.com/gin-gonic/gin"
@@ -28,15 +30,24 @@ func main() {
 	// Uncomment this line to run migrations
 	db.Migrate()
 
+	// Uncomment this line to clean Dirty migrations
+	// db.CleanDirtyMigration()
+
+	// Uncomment this line to run native Down migrations
+	// db.NativeMigrationDown()
+
+	// Uncomment this line to run native Up migrations
+	// db.NativeMigrationUp()
+
 	// Uncomment this line to Seed the Database with Dummy Data
 	db.Seed()
 
 	gormDB := db.GetDB()
 
 	config := &redis.Config{
-		Hosts:       []string{"localhost:6379"},
-		PoolSize:    50,
-		MinIdleConn: 10,
+		Hosts:       []string{constants.RedisHost},
+		PoolSize:    constants.RedisPoolSize,
+		MinIdleConn: constants.RedisMinIdleConn,
 	}
 
 	client := redis.NewClient(config)
@@ -44,10 +55,20 @@ func main() {
 
 	log.Print("Starting IMS at PORT:8000")
 
-	server := http.InitializeServer(":8000", 10*time.Second, 10*time.Second, 70*time.Second, false)
+	server := http.InitializeServer(
+		constants.ServerPort,
+		time.Duration(constants.ServerReadTimeout)*time.Second,
+		time.Duration(constants.ServerWriteTimeout)*time.Second,
+		time.Duration(constants.ServerIdleTimeout)*time.Second,
+		false,
+	)
+
+	server.Engine.Use(middleware.CORSMiddleware())
+	server.Engine.Use(middleware.LoggingMiddleware())
+	server.Engine.Use(middleware.ValidationMiddleware())
 
 	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"status": "ok"})
+		ctx.JSON(200, gin.H{"status": "ok", "service": "IMS"})
 	})
 
 	hubRepo := repository.NewHubRepository(gormDB, client)
@@ -58,6 +79,10 @@ func main() {
 	skuRepo := repository.NewSkuRepository(gormDB, client)
 	skuController := controllers.NewSkuController(skuRepo)
 	routes.RegisterSkuRoutes(IMS, skuController)
+
+	inventoryRepo := repository.NewInventoryRepository(gormDB, client, skuRepo, hubRepo)
+	inventoryController := controllers.NewInventoryController(inventoryRepo)
+	routes.RegisterInventoryRoutes(IMS, inventoryController)
 
 	if err := server.StartServer("IMS"); err != nil {
 		log.Fatal("Could Not start Server: ", err)
