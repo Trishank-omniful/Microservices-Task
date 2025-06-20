@@ -6,12 +6,16 @@ import (
 )
 
 func RegisterSkuRoutes(router *gin.RouterGroup, controller *controllers.SkuController) {
-	hubGroup := router.Group("/sku")
+	skuGroup := router.Group("/sku")
 	{
-		hubGroup.GET("", controller.GetAllSkus)
-		hubGroup.GET("/:id", controller.GetSkuById)
-		hubGroup.POST("", controller.CreateSku)
-		hubGroup.PUT("/:id", controller.UpdateSku)
-		hubGroup.DELETE("/:id", controller.DeleteSku)
+		skuGroup.GET("", controller.GetAllSkus)
+		skuGroup.GET("/:id", controller.GetSkuById)
+		skuGroup.POST("", controller.CreateSku)
+		skuGroup.PUT("/:id", controller.UpdateSku)
+		skuGroup.DELETE("/:id", controller.DeleteSku)
+		skuGroup.POST("/filter", controller.GetSkusByTenantAndSeller)
+		skuGroup.POST("/batch", controller.CreateSKUsBatch)
+		skuGroup.POST("/batch/ids", controller.GetSKUsByIDs)
+		skuGroup.POST("/batch/codes", controller.GetSKUsByCodes)
 	}
 }
