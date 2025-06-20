@@ -13,5 +13,7 @@ func RegisterHubRoutes(router *gin.RouterGroup, controller *controllers.HubContr
 		hubGroup.POST("", controller.CreateHub)
 		hubGroup.PUT("/:id", controller.UpdateHub)
 		hubGroup.DELETE("/:id", controller.DeleteHub)
+		hubGroup.POST("/batch", controller.CreateHubsBatch)
+		hubGroup.POST("/batch/ids", controller.GetHubsByIDs)
 	}
 }
