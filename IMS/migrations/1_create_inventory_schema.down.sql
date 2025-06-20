@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS inventories;
+DROP INDEX IF EXISTS idx_tenant_id;
+DROP INDEX IF EXISTS idx_seller_id;
+DROP TABLE IF EXISTS skus;
+DROP TABLE IF EXISTS hubs;
