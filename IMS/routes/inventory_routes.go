@@ -10,4 +10,6 @@ func RegisterInventoryRoutes(router *gin.RouterGroup, ctrl *controllers.Inventor
 	router.GET("/inventory", ctrl.GetInventory)
 	router.POST("/inventory/batch", ctrl.UpsertInventoryBatch)
 	router.POST("/inventory/batch/hub-skus", ctrl.GetInventoriesByHubAndSKUs)
+	router.POST("/inventory/atomic/reduce", ctrl.AtomicReduceInventory)
+	router.POST("/inventory/check-availability", ctrl.CheckInventoryAvailability)
 }

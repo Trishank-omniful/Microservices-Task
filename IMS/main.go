@@ -73,7 +73,7 @@ func main() {
 
 	hubRepo := repository.NewHubRepository(gormDB, client)
 	hubController := controllers.NewHubController(hubRepo)
-	IMS := server.Engine.Group("/api/v1")
+	IMS := server.Engine.Group("/api/v1/ims")
 	routes.RegisterHubRoutes(IMS, hubController)
 
 	skuRepo := repository.NewSkuRepository(gormDB, client)
